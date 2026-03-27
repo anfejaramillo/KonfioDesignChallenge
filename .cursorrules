@@ -1,0 +1,230 @@
+# .cursorrules
+
+## Global Rules
+
+- ALWAYS follow Spec-Driven Development (SDD)
+- NEVER generate code without a valid SPEC.md
+- ALWAYS respect DOMAIN_MODEL.md and ARCHITECTURE.md
+- DO NOT invent business logic not defined in specs
+- PRIORITIZE correctness over speed
+- OUTPUT must be production-ready (no placeholders)
+
+## 📜 Development Workflow (MANDATORY)
+
+1. Read SPEC.md
+2. Read DOMAIN_MODEL.md
+3. Read ARCHITECTURE.md
+4. Validate understanding
+5. THEN generate code
+
+🚫 If any of these files are missing → STOP and ask
+
+## 🧩 Architecture Constraints
+
+- Use Clean Architecture (Hexagonal)
+- Strict separation of layers:
+
+domain → application → infrastructure → interfaces
+
+- Domain layer MUST NOT depend on:
+  - NestJS
+  - AWS SDK
+  - External APIs
+
+- Use dependency inversion via interfaces (ports)
+
+## 🧱 NestJS Rules
+
+- Use NestJS ONLY in:
+  - interfaces (controllers)
+  - infrastructure (providers)
+
+- DO NOT place business logic in:
+  - controllers
+  - services (unless application layer)
+
+- Use DTOs ONLY at boundaries
+
+## 🧠 DDD Rules
+
+- ALWAYS use:
+  - Entities
+  - Value Objects
+  - Aggregates
+
+- Business logic MUST live in:
+  - Entities OR Domain Services
+
+- Aggregates enforce invariants
+
+- Use Ubiquitous Language from DOMAIN_MODEL.md
+
+## 🔁 Event-Driven Rules
+
+- All side effects MUST be event-driven
+- Events MUST be:
+  - Immutable
+  - Versioned
+  - Idempotent
+
+- ALWAYS include:
+  - eventId
+  - occurredAt
+  - idempotencyKey
+
+- Use Outbox Pattern for publishing events
+
+## ⚙️ Application Layer Rules
+
+- Use Cases MUST:
+  - Orchestrate domain logic
+  - NOT contain business rules
+
+- Each use case = 1 application service
+
+## 🗄️ Persistence Rules
+
+- Use Repository pattern
+- Repositories are interfaces in domain
+- Implementations live in infrastructure
+
+- NEVER expose ORM models to domain
+
+## ☁️ AWS Rules
+
+- Prefer serverless:
+  - Lambda
+  - EventBridge
+  - SQS
+
+- Ensure:
+  - Idempotency (DynamoDB or equivalent)
+  - DLQs configured
+  - Retry with exponential backoff
+
+## 🔌 Integration Rules
+
+- External systems MUST go through:
+  - Anti-Corruption Layer (ACL)
+
+- NEVER leak external models into domain
+
+- Use adapters for:
+  - Credit bureaus
+  - Legacy system
+
+## 🧪 Testing Rules
+
+- Domain MUST be testable without:
+  - Frameworks
+  - Databases
+  - AWS
+
+- Write:
+  - Unit tests for domain
+  - Integration tests for adapters
+
+## 🚫 Anti-Patterns (FORBIDDEN)
+
+- ❌ Business logic in controllers
+- ❌ Direct DB access from domain
+- ❌ Tight coupling between services
+- ❌ Shared database between microservices
+- ❌ Skipping domain layer
+- ❌ Generating code without spec
+
+## 🧠 AI Behavior Rules (CRITICAL)
+
+- DO NOT hallucinate missing requirements
+- IF unclear → ASK before coding
+- ALWAYS explain assumptions
+- PREFER explicitness over guessing
+
+## 📂 Folder Structure (MANDATORY)
+
+src/
+
+  domain/
+    entities/
+    value-objects/
+    aggregates/
+    events/
+    repositories/
+
+  application/
+    use-cases/
+    services/
+
+  infrastructure/
+    persistence/
+    messaging/
+    external/
+
+  interfaces/
+    http/
+    events/
+
+## 🧬 Naming Conventions
+
+- Use Ubiquitous Language
+- Avoid generic names like:
+  - "Manager"
+  - "Helper"
+  - "Util"
+
+- Prefer:
+  - LoanApplicationService
+  - RiskAssessmentEngine
+  - CreditDecisionPolicy
+
+## 🔐 Idempotency Rules
+
+- ALL event consumers MUST:
+  - Check idempotencyKey
+  - Store processed keys
+
+- Use:
+  - DynamoDB (preferred)
+  - Redis (alternative)
+
+## 📊 Observability
+
+- MUST include:
+  - Structured logs
+  - Correlation IDs
+  - Metrics (latency, errors)
+
+## 🚀 Output Expectations
+
+- Code MUST be:
+  - Clean
+  - Typed (TypeScript strict)
+  - Modular
+  - Testable
+
+- Avoid:
+  - Boilerplate repetition
+  - Overengineering
+
+## 📌 Final Rule
+
+If something conflicts:
+
+👉 DOMAIN_MODEL.md > ARCHITECTURE.md > SPEC.md > Code
+
+## 🎯 Goal
+
+Build a system that is:
+
+- Scalable
+- Event-driven
+- Cloud-native
+- Domain-centric
+
+## 🔥 Pro Tip (for Cursor/Codex)
+
+When generating code:
+
+- Generate ONE use case at a time
+- Then validate
+- Then continue
