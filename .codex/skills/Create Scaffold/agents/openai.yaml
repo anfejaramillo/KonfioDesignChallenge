@@ -1,0 +1,5 @@
+interface:
+  display_name: "Create Scaffold"
+  short_description: "Build DDD NestJS service scaffolds"
+  default_prompt: "Use $createscaffold to scaffold a new bounded-context NestJS service following SPEC.md and DOMAIN_MODEL.md."
+

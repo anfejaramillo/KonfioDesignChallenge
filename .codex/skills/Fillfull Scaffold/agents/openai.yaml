@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fillfull Scaffold"
+  short_description: "Complete/fix DDD NestJS service scaffolds"
+  default_prompt: "Use $fillfullscaffold to complete and fix an existing bounded-context NestJS service scaffold following AGENTS.md, SPEC.md, and DOMAIN_MODEL.md."

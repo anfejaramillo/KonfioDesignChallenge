@@ -14,30 +14,15 @@ Minimizar alucinaciones de LLMs
 Asegurar consistencia entre microservicios
 Arquitectura de Agentes
 
-# 1. Architect Agent
+# 1. Domain Agent
+
+Leer, entender y aplicar DDD al tech challenge de Konfio, y usando los documentos de "Modelado de Dominio.md" y "Entrega.md".
 
 ## Responsabilidad:
 
-Diseñar arquitectura (DDD + AWS)
-Definir bounded contexts
-Validar patrones (Saga, Outbox, ACL, etc.)
-
-## Inputs:
-
-SPEC.md
-DOMAIN_MODEL.md
-
-## Outputs:
-
-ARCHITECTURE.md
-ADRs
-
-# 2. Domain Agent
-
-## Responsabilidad:
+Los archivos de salida deben tener el nombre del Dominio analizado y estar bajo la carpeta "SPECS"
 
 Modelado táctico DDD
-Definir:
 Entities
 Value Objects
 Aggregates
@@ -46,8 +31,11 @@ Domain Events
 ## Outputs:
 
 DOMAIN_MODEL.md
+SPEC.md for each aggregate (microservice) designed.
 
-# 3. Backend Agent (NestJS)
+# 2. Backend Agent (NestJS)
+
+Leer, entender y aplicar DDD al tech challenge de Konfio, y usando los documentos de "Modelado de Dominio.md" y "Entrega.md". Y ejecutar la responsabilidad.
 
 ## Responsabilidad:
 
@@ -67,7 +55,7 @@ application/
 infrastructure/
 interfaces/
 
-# 4. Platform Agent
+# 3. Platform Agent
 
 ## Responsabilidad:
 
@@ -81,14 +69,14 @@ Seguridad
 PLATFORM.md
 infra/
 
-# 5. Integration Agent
+# 4. Integration Agent
 
 ## Responsabilidad:
 
 Integraciones externas (buró de crédito)
 Anti-Corruption Layer
 
-# 6. QA / Validation Agent
+# 5. QA / Validation Agent
 
 ## Responsabilidad:
 
@@ -100,14 +88,12 @@ Flujo de Orquestación
 
 ## flow:
 
-SPEC.md
 → Domain Agent
+→ SPEC.md
 → DOMAIN_MODEL.md
-→ Architect Agent
-→ ARCHITECTURE.md
 → Backend Agent → Microservicios NestJS
-→ Platform Agent → IaC + CI/CD
-→ QA Agent → Validación final
+→ Platform Agent → IaC + CI/CD (disable for now)
+→ QA Agent → Validación final (disable for now)
 
 # Spec-Driven Development
 
