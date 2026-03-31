@@ -12,11 +12,11 @@ Puede encontrarse en el documento "Modelado de Dominio.md", y basicamente se con
 
 Se escogieron algunos patrones de diseño para la implementacion, mientras que otros fueron descartados, estan enumerados en la lista de ADRs. Aqui, se hace un breve resumen:
 
-- Esquema de CDC (On-Going DB Replication): Debido a que la consistencia de datos eventual entre el sistema legacy y modernizado es temporal, se eligen servicios administrados, donde basicamente, se mantiene el CDC mediante la colocacion de mensajes en topicos de KinesisDataStream para invocar los correspondientes endpoints de los respositorios en los agregados asociados.
+- Esquema de CDC (On-Going DB Replication): Debido a que la consistencia de datos eventual entre el sistema legacy y modernizado es temporal, se eligen servicios administrados, donde basicamente, se mantiene el CDC mediante la colocacion de mensajes en topicos de KinesisDataStream para invocar los correspondientes endpoints de los respositorios en los agregados respectivos.
 
 - Alta disponibilidad: Solo una region, cuyo Workload esta distribuido en 3 zonas de disponibilidad.
 
-- Anticorruption Layer: Se elije como no adecuada, puesto que el acceso a la persistencia desde el monolito legacy es altamente acoplada, y se intuye que separar el ORM de la capa de datos sera una tarea infructuosa. Ademas, solo se disponibilizaran endpoint desde legacy para consumo desde el sistema modernizado que sean IDEMPOTENTES.
+- Anticorruption Layer: Se elije como adecuado, puesto que el acceso a la persistencia desde el monolito legacy es altamente acoplada, y se intuye que separar el ORM de la capa de datos sera una tarea dificil. Ademas, solo se disponibilizaran endpoint desde legacy para consumo desde el sistema modernizado que sean IDEMPOTENTES, por medio del servicio "anticorrucion" y que esta ubicado en la VPC legacy y con las configuraciones de traffic inbound y outbound que le permitan acceder al mismo.
 
 - Strategy: Este patron se propone su implementacion en el procesamiento de la decision de credito, luego de realizar el analisis de riesgo. ya que en tiempo de ejecucion debe decidirse cual "algoritmo" de decision se ejecutara, o si debera realizarse una aprobacion manual (para clientes "particulares").
 
@@ -45,8 +45,9 @@ El diagrama de arqutiectura puede encontrarse en el archivo *"Diagrama de arquit
 
 La migracion se realizara utilizando el circuitBreaker como **"inspector"** de los nuevos releases, alli deberemos controlar la distribucion de las peticiones entre el sistema legado y el modernizado, garantizando la no afectacion de las aplicaciones frontales.
 
-La migracion se debe realizar usando el patron Strangler Fig, recorriendo modulo por modulo, sin embargo, en general, todos deberan seguir algo cercano al siguiente esquema de fases:
+Se debe tener presente, que el consumo del nuevo motor de "recomendaciones de credito" desde el sistema legacy debera ser Machine-to-Machine y que posiblemente se debera configurar el listener en los load balancer para apuntar al sistema modernizado, sin embargo, se recomienda redirigir el trafico desde el ALB hacia el API Gateway que integra el Circuit Breaker para garantizar la intercepcion de peticiones y la obtencion de metricas asociadas al correcto funcionamiento del sistema modernizado.
 
+La migracion se debe realizar usando el patron Strangler Fig, recorriendo modulo por modulo, sin embargo, en general, todos deberan seguir algo cercano al siguiente esquema de fases:
 
 ### Fases de la migración
 
@@ -87,7 +88,7 @@ Esto garantiza que los Boundary Context se mantegan. Por ej:
 
 ### Fase 6 - Full Migration
 - Enrutado de trafico total a la nueva infraestructura
-- Implementacion de CircuitBreaker multi-region (Pilot-Light)
+- Implementacion de CircuitBreaker multi-region (con DRP basado en la estrategia Pilot-Light)
 - Desactivacion del CircuitBreaker original.
 
 ## Fase 3. Architecture Decision Records
@@ -107,9 +108,9 @@ El roadmap de implementacion tecnico aqui propuesto busca estandarizar la creaci
 
 A nivel de scalfolding: Se deben generar los artefactos base para garantizar agilidad en los despligues, teniendo presente las normativas y politicas de ciberseguridad que apliquen en general a la compañia. Teniendo presente que la operacion comercial es/sera internacional.
 
-A nivel de IaC: El objetivo central es garantizar la facilidad de despliegues en nuevas zonas de disponibilidad segun demanda y crecimiento/expansion comercial de la empresa. Se priorizara el uso de Terraform e implementaras practicas de seguridad (least privilege) para garantizar acogimiento a la normativas vigentes en terminos de servicios de almacenamiento y procesamiento. Todo el trafico debe ser crifrado.
+A nivel de IaC: El objetivo central es garantizar la facilidad de despliegues en nuevas zonas de disponibilidad segun demanda y crecimiento/expansion comercial de la empresa. Se priorizara el uso de Terraform e implementar practicas de seguridad (e.g. least privilege) para garantizar acogimiento a la normativas vigentes en terminos de servicios de almacenamiento y procesamiento. Todo el trafico debe ser crifrado (in-transit y at-rest).
 
-A nivel de Pipelines: se deben implementar Github Actions o Gitlab CI para la gestion de despliegues automaticos. La siguiente lista de stage son los minimos e indispensables:
+A nivel de Pipelines: se deben implementar Github Actions o Gitlab CI para la gestion de despliegues automaticos. La siguiente lista de stages son los minimos e indispensables:
 
 - Automated Code Review
 - Build
@@ -117,15 +118,16 @@ A nivel de Pipelines: se deben implementar Github Actions o Gitlab CI para la ge
 - Análisis de seguridad (SAST, dependencias)
 - Build y empaquetado (Registro de imagenes)
 - Despliegue automatizado por ambiente
+- Smoke Tests
 
-A nivel de Observabilidad: Se debe integrar herramientas como DataDog o New Relic a los correspondientes health checks y/o sideCars en los contenedores. Se deben implementar Logs estructurados, Trazas distribuidas (Open telemetry) y monitoreo para garantizar en minimo nivel de observabilidad (Inicialmente sin "actions").
+A nivel de Observabilidad: Se debe integrar herramientas como DataDog o New Relic a los correspondientes health checks y/o sideCars en los contenedores. Se deben implementar Logs estructurados, Trazas distribuidas (Open telemetry) y monitoreo para garantizar en minimo nivel de observabilidad (Observabilidad inicialmente sin "actions", es decir, garantizar monitoreo para desarrollar e integrar observabilidad).
 
 Lo anterior se debe alinear a la implementacion estrategica del patron Strangler Fig como sigue:
 
-Inicialmente, el Golden Path debe permitir la coexistencia entre el sistema legacy y el modernizado, facilitando la creacion de nuevos microservicios que consuman eventos o datos replicados desde el monolito mediante procesos de CDC. En esta fase, el scaffolding incluye integraciones preconfiguradas con mecanismos de mensajeria (EventBridge/SQS) y adaptadores hacia el sistema legacy, permitiendo desacoplar progresivamente la logica de negocio.
+Inicialmente, el Golden Path debe permitir la coexistencia entre el sistema legacy y el modernizado, facilitando la creacion de nuevos microservicios que consuman eventos o datos replicados desde el monolito (Sistema Legacy) mediante procesos de CDC. En esta fase, el scaffolding incluye integraciones preconfiguradas con mecanismos de mensajeria (EventBridge/SQS) y adaptadores hacia el sistema legacy, permitiendo desacoplar progresivamente la logica de negocio.
 
 Posteriormente, los pipelines y la infraestructura deben soportar despliegues progresivos (Canary Releases), donde el enrutamiento del trafico es controlado mediante el componente de Circuit Breaker definido en la arquitectura. Esto permite validar el comportamiento del sistema modernizado sin impactar la operacion productiva, manteniendo la capacidad de rollback inmediato.
 
-A medida que se migran los modulos, el Golden Path asegura que cada nuevo microservicio cumpla con los estandares definidos (arquitectura, seguridad, observabilidad), evitando desviaciones y reduciendo la deuda tecnica. Adicionalmente, la instrumentacion desde el inicio permite comparar resultados entre ambos sistemas (shadow testing), facilitando la toma de decisiones en la migracion.
+A medida que se migran los modulos, el Golden Path asegura que cada nuevo microservicio cumpla con los estandares definidos (arquitectura, seguridad, observabilidad, etc), evitando desviaciones y reduciendo la deuda tecnica. Adicionalmente, la instrumentacion desde el inicio permite comparar resultados entre ambos sistemas (shadow testing), guiando la toma de decisiones (Data-Driven) en la migracion.
 
-Finalmente, una vez alcanzada la estabilidad operativa, el mismo Golden Path permite retirar progresivamente las dependencias hacia el sistema legacy (componentes de CDC, adaptadores y rutas legacy), consolidando una arquitectura completamente desacoplada, event-driven y alineada a los principios definidos desde el dominio.
+Finalmente, una vez alcanzada la estabilidad operativa, el mismo Golden Path permite retirar progresivamente las dependencias hacia el sistema legacy (componentes de CDC, adaptadores y rutas legacy), consolidando una arquitectura completamente desacoplada, event-driven y alineada a los principios definidos desde el dominio y la vision de arquitectura.

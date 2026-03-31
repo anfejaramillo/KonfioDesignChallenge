@@ -1,0 +1,289 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/applicant-credit-history/events/loan-application-created": {
+      "post": {
+        "description": "Consumes the event, fetches bureau data, normalizes scores, and publishes bureauDataFetched.",
+        "operationId": "ApplicantCreditHistoryController_processLoanApplicationCreated",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "eventId",
+                  "eventType",
+                  "aggregateId",
+                  "applicationId",
+                  "applicantId",
+                  "idempotencyKey",
+                  "correlationId",
+                  "occurredAt"
+                ],
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "example": "evt-loan-app-001"
+                  },
+                  "eventType": {
+                    "type": "string",
+                    "enum": [
+                      "loanApplicationCreated"
+                    ],
+                    "example": "loanApplicationCreated"
+                  },
+                  "aggregateId": {
+                    "type": "string",
+                    "example": "loan-app-001"
+                  },
+                  "applicationId": {
+                    "type": "string",
+                    "example": "loan-app-001"
+                  },
+                  "applicantId": {
+                    "type": "string",
+                    "example": "applicant-001"
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "example": "idem-loan-app-001-v1"
+                  },
+                  "correlationId": {
+                    "type": "string",
+                    "example": "corr-loan-app-001-v1"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-03-30T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Event processed or ignored as duplicate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-001"
+                    },
+                    "reportsStored": {
+                      "type": "number",
+                      "example": 2
+                    },
+                    "scoresUpdated": {
+                      "type": "number",
+                      "example": 2
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "PROCESSED",
+                        "DUPLICATE_IGNORED"
+                      ],
+                      "example": "PROCESSED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Process loanApplicationCreated event",
+        "tags": [
+          "applicant-credit-history"
+        ]
+      }
+    },
+    "/applicant-credit-history/{applicantId}/bureau-reports": {
+      "get": {
+        "operationId": "ApplicantCreditHistoryController_getBureauReports",
+        "parameters": [
+          {
+            "name": "applicantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "applicant-001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bureau reports found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-001"
+                    },
+                    "reports": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "reportId": {
+                            "type": "string",
+                            "example": "report-uuid"
+                          },
+                          "applicantId": {
+                            "type": "string",
+                            "example": "applicant-001"
+                          },
+                          "providerName": {
+                            "type": "string",
+                            "example": "BuroDeCredito"
+                          },
+                          "rawData": {
+                            "type": "object"
+                          },
+                          "fetchedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2026-03-30T12:00:00.000Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get bureau reports by applicant",
+        "tags": [
+          "applicant-credit-history"
+        ]
+      }
+    },
+    "/applicant-credit-history/{applicantId}/credit-scores/latest": {
+      "get": {
+        "operationId": "ApplicantCreditHistoryController_getLatestCreditScores",
+        "parameters": [
+          {
+            "name": "applicantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "applicant-001",
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerName",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "BuroDeCredito",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest scores found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-001"
+                    },
+                    "scores": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "scoreId": {
+                            "type": "string",
+                            "example": "score-uuid"
+                          },
+                          "applicantId": {
+                            "type": "string",
+                            "example": "applicant-001"
+                          },
+                          "providerName": {
+                            "type": "string",
+                            "example": "BuroDeCredito"
+                          },
+                          "score": {
+                            "type": "number",
+                            "example": 691
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2026-03-30T12:00:00.000Z"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get latest credit scores by applicant and optional provider",
+        "tags": [
+          "applicant-credit-history"
+        ]
+      }
+    },
+    "/applicant-credit-history/health": {
+      "get": {
+        "operationId": "ApplicantCreditHistoryController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Applicant Credit History Service is running."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": [
+          "applicant-credit-history"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Applicant Credit History Service API",
+    "description": "OpenAPI documentation for applicant-credit-history-service",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}

@@ -1,0 +1,582 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/loan-applications/applicants": {
+      "post": {
+        "description": "Creates or updates an applicant profile.",
+        "operationId": "LoanApplicationController_registerApplicant",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "name",
+                  "dni",
+                  "incomeOrigin",
+                  "monthlyIncome",
+                  "mobile",
+                  "email",
+                  "idempotencyKey"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "applicant-100"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Ana Gomez"
+                  },
+                  "dni": {
+                    "type": "string",
+                    "example": "10101010"
+                  },
+                  "incomeOrigin": {
+                    "type": "string",
+                    "example": "SALARY"
+                  },
+                  "monthlyIncome": {
+                    "type": "number",
+                    "example": 12000
+                  },
+                  "mobile": {
+                    "type": "string",
+                    "example": "+525511112222"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "ana.gomez@example.com"
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "example": "idem-applicant-100-v1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Applicant registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-100"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error in request body"
+          }
+        },
+        "summary": "Register applicant",
+        "tags": [
+          "loan-applications"
+        ]
+      }
+    },
+    "/loan-applications/products": {
+      "post": {
+        "description": "Creates or updates a loan product definition.",
+        "operationId": "LoanApplicationController_registerLoanProduct",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "name",
+                  "term",
+                  "timePeriodType",
+                  "interestRate",
+                  "currencyCode",
+                  "currencyName",
+                  "minAmount",
+                  "maxAmount",
+                  "idempotencyKey"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "product-100"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Capital de Trabajo PYME"
+                  },
+                  "term": {
+                    "type": "number",
+                    "example": 12
+                  },
+                  "timePeriodType": {
+                    "type": "string",
+                    "enum": [
+                      "DAILY",
+                      "WEEKLY",
+                      "MONTHLY"
+                    ],
+                    "example": "MONTHLY"
+                  },
+                  "interestRate": {
+                    "type": "number",
+                    "example": 0.24
+                  },
+                  "currencyCode": {
+                    "type": "string",
+                    "example": "MXN"
+                  },
+                  "currencyName": {
+                    "type": "string",
+                    "example": "Mexican Peso"
+                  },
+                  "minAmount": {
+                    "type": "number",
+                    "example": 5000
+                  },
+                  "maxAmount": {
+                    "type": "number",
+                    "example": 250000
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "example": "idem-product-100-v1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Loan product registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "loanProductId": {
+                      "type": "string",
+                      "example": "product-100"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error in request body"
+          }
+        },
+        "summary": "Register loan product",
+        "tags": [
+          "loan-applications"
+        ]
+      }
+    },
+    "/loan-applications": {
+      "post": {
+        "description": "Registers a new loan application and publishes loanApplicationCreated event.",
+        "operationId": "LoanApplicationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "applicationId",
+                  "applicantId",
+                  "loanProductId",
+                  "requestedAmount",
+                  "currencyCode",
+                  "currencyName",
+                  "idempotencyKey",
+                  "correlationId"
+                ],
+                "properties": {
+                  "applicationId": {
+                    "type": "string",
+                    "example": "loan-app-100"
+                  },
+                  "applicantId": {
+                    "type": "string",
+                    "example": "applicant-100"
+                  },
+                  "loanProductId": {
+                    "type": "string",
+                    "example": "product-100"
+                  },
+                  "requestedAmount": {
+                    "type": "number",
+                    "example": 20000
+                  },
+                  "currencyCode": {
+                    "type": "string",
+                    "example": "MXN"
+                  },
+                  "currencyName": {
+                    "type": "string",
+                    "example": "Mexican Peso"
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "example": "idem-loan-app-100-v1"
+                  },
+                  "correlationId": {
+                    "type": "string",
+                    "example": "corr-loan-app-100-v1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Loan application accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicationId": {
+                      "type": "string",
+                      "example": "loan-app-100"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "UNDER_REVIEW",
+                        "APPROVED",
+                        "REJECTED"
+                      ],
+                      "example": "UNDER_REVIEW"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error in request body"
+          }
+        },
+        "summary": "Create loan application",
+        "tags": [
+          "loan-applications"
+        ]
+      },
+      "get": {
+        "description": "Returns loan applications with optional filters by applicantId and status.",
+        "operationId": "LoanApplicationController_getAll",
+        "parameters": [
+          {
+            "name": "applicantId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "UNDER_REVIEW",
+                "APPROVED",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Loan applications list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "applicationId": {
+                        "type": "string",
+                        "example": "loan-app-100"
+                      },
+                      "applicantId": {
+                        "type": "string",
+                        "example": "applicant-100"
+                      },
+                      "loanProductId": {
+                        "type": "string",
+                        "example": "product-100"
+                      },
+                      "requestedAmount": {
+                        "type": "number",
+                        "example": 20000
+                      },
+                      "currencyCode": {
+                        "type": "string",
+                        "example": "MXN"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "UNDER_REVIEW",
+                          "APPROVED",
+                          "REJECTED"
+                        ],
+                        "example": "UNDER_REVIEW"
+                      },
+                      "requestedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-30T18:00:00.000Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query params"
+          }
+        },
+        "summary": "List loan applications",
+        "tags": [
+          "loan-applications"
+        ]
+      }
+    },
+    "/loan-applications/{applicationId}": {
+      "get": {
+        "operationId": "LoanApplicationController_getById",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "loan-app-100",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Loan application found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicationId": {
+                      "type": "string",
+                      "example": "loan-app-100"
+                    },
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-100"
+                    },
+                    "loanProductId": {
+                      "type": "string",
+                      "example": "product-100"
+                    },
+                    "requestedAmount": {
+                      "type": "number",
+                      "example": 20000
+                    },
+                    "currencyCode": {
+                      "type": "string",
+                      "example": "MXN"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "UNDER_REVIEW",
+                        "APPROVED",
+                        "REJECTED"
+                      ],
+                      "example": "UNDER_REVIEW"
+                    },
+                    "requestedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-03-30T18:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path param"
+          },
+          "404": {
+            "description": "Loan application not found"
+          }
+        },
+        "summary": "Get loan application by ID",
+        "tags": [
+          "loan-applications"
+        ]
+      }
+    },
+    "/loan-applications/events/credit-decision-made": {
+      "post": {
+        "description": "Consumes an external decision event and updates loan application status.",
+        "operationId": "LoanApplicationController_processCreditDecision",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "eventId",
+                  "eventType",
+                  "aggregateId",
+                  "idempotencyKey",
+                  "correlationId",
+                  "applicationId",
+                  "applicantId",
+                  "decision",
+                  "occurredAt"
+                ],
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "example": "evt-credit-decision-100"
+                  },
+                  "eventType": {
+                    "type": "string",
+                    "enum": [
+                      "creditDecisionMade"
+                    ],
+                    "example": "creditDecisionMade"
+                  },
+                  "aggregateId": {
+                    "type": "string",
+                    "example": "loan-app-100"
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "example": "idem-event-credit-decision-100-v1"
+                  },
+                  "correlationId": {
+                    "type": "string",
+                    "example": "corr-event-credit-decision-100-v1"
+                  },
+                  "applicationId": {
+                    "type": "string",
+                    "example": "loan-app-100"
+                  },
+                  "applicantId": {
+                    "type": "string",
+                    "example": "applicant-100"
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "UNDER_REVIEW",
+                      "APPROVED",
+                      "REJECTED"
+                    ],
+                    "example": "APPROVED"
+                  },
+                  "approvedAmount": {
+                    "type": "number",
+                    "example": 18000
+                  },
+                  "interestRate": {
+                    "type": "number",
+                    "example": 0.24
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-03-30T18:10:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Credit decision processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applicationId": {
+                      "type": "string",
+                      "example": "loan-app-100"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "UNDER_REVIEW",
+                        "APPROVED",
+                        "REJECTED"
+                      ],
+                      "example": "APPROVED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error in request body"
+          },
+          "404": {
+            "description": "Loan application not found"
+          }
+        },
+        "summary": "Process creditDecisionMade event",
+        "tags": [
+          "loan-applications"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Loan Application Service API",
+    "description": "Public OpenAPI documentation for loan-application-service",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "loan-applications",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}

@@ -1,0 +1,431 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/loan-decisions/events/risk-assessment-completed": {
+      "post": {
+        "description": "Persists risk assessment, calculates credit decision, and publishes creditDecisionMade.",
+        "operationId": "LoanDecisionController_evaluateFromRiskAssessment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "eventId",
+                  "eventType",
+                  "aggregateId",
+                  "decisionId",
+                  "applicationId",
+                  "applicantId",
+                  "riskAssessmentId",
+                  "riskLevel",
+                  "riskAnalysisResult",
+                  "idempotencyKey",
+                  "correlationId",
+                  "occurredAt"
+                ],
+                "properties": {
+                  "eventId": {
+                    "type": "string",
+                    "example": "evt-risk-001"
+                  },
+                  "eventType": {
+                    "type": "string",
+                    "enum": [
+                      "riskAssesmentCompleted"
+                    ],
+                    "example": "riskAssesmentCompleted"
+                  },
+                  "aggregateId": {
+                    "type": "string",
+                    "example": "loan-app-001"
+                  },
+                  "decisionId": {
+                    "type": "string",
+                    "example": "decision-001"
+                  },
+                  "applicationId": {
+                    "type": "string",
+                    "example": "loan-app-001"
+                  },
+                  "applicantId": {
+                    "type": "string",
+                    "example": "applicant-001"
+                  },
+                  "riskAssessmentId": {
+                    "type": "string",
+                    "example": "risk-001"
+                  },
+                  "riskLevel": {
+                    "type": "object",
+                    "properties": {
+                      "probabilityOfDefaultUpperLimit": {
+                        "type": "number",
+                        "example": 0.22
+                      },
+                      "description": {
+                        "type": "string",
+                        "example": "LOW"
+                      }
+                    }
+                  },
+                  "riskAnalysisResult": {
+                    "type": "object"
+                  },
+                  "requestedAmount": {
+                    "type": "number",
+                    "example": 15000
+                  },
+                  "policy": {
+                    "type": "object",
+                    "properties": {
+                      "maxProbabilityOfDefaultForApproval": {
+                        "type": "number",
+                        "example": 0.35
+                      },
+                      "manualApprovalRequired": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "baseInterestRate": {
+                        "type": "number",
+                        "example": 0.2
+                      }
+                    }
+                  },
+                  "idempotencyKey": {
+                    "type": "string",
+                    "example": "idem-risk-001-v1"
+                  },
+                  "correlationId": {
+                    "type": "string",
+                    "example": "corr-risk-001-v1"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2026-03-30T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "example": "decision-001"
+                    },
+                    "applicationId": {
+                      "type": "string",
+                      "example": "loan-app-001"
+                    },
+                    "decision": {
+                      "type": "string",
+                      "enum": [
+                        "APPROVED",
+                        "REJECTED",
+                        "UNDER_REVIEW"
+                      ],
+                      "example": "APPROVED"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "PROCESSED",
+                        "DUPLICATE_IGNORED"
+                      ],
+                      "example": "PROCESSED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Process riskAssesmentCompleted event",
+        "tags": [
+          "loan-decisions"
+        ]
+      }
+    },
+    "/loan-decisions/health": {
+      "get": {
+        "operationId": "LoanDecisionController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Loan Decision Service is running."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": [
+          "loan-decisions"
+        ]
+      }
+    },
+    "/loan-decisions": {
+      "get": {
+        "operationId": "LoanDecisionController_getAllDecisions",
+        "parameters": [
+          {
+            "name": "applicantId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "decision",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "APPROVED",
+                "REJECTED",
+                "UNDER_REVIEW"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "decisionId": {
+                        "type": "string",
+                        "example": "decision-001"
+                      },
+                      "applicationId": {
+                        "type": "string",
+                        "example": "loan-app-001"
+                      },
+                      "applicantId": {
+                        "type": "string",
+                        "example": "applicant-001"
+                      },
+                      "decision": {
+                        "type": "string",
+                        "enum": [
+                          "APPROVED",
+                          "REJECTED",
+                          "UNDER_REVIEW"
+                        ],
+                        "example": "APPROVED"
+                      },
+                      "approvedAmount": {
+                        "type": "number",
+                        "nullable": true,
+                        "example": 15000
+                      },
+                      "assignedInterestRate": {
+                        "type": "number",
+                        "nullable": true,
+                        "example": 0.42
+                      },
+                      "riskAssessmentId": {
+                        "type": "string",
+                        "example": "risk-001"
+                      },
+                      "calculatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-30T12:00:01.000Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List credit decisions with optional filters",
+        "tags": [
+          "loan-decisions"
+        ]
+      }
+    },
+    "/loan-decisions/{applicationId}": {
+      "get": {
+        "operationId": "LoanDecisionController_getDecisionByApplicationId",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "loan-app-001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "example": "decision-001"
+                    },
+                    "applicationId": {
+                      "type": "string",
+                      "example": "loan-app-001"
+                    },
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-001"
+                    },
+                    "decision": {
+                      "type": "string",
+                      "enum": [
+                        "APPROVED",
+                        "REJECTED",
+                        "UNDER_REVIEW"
+                      ],
+                      "example": "APPROVED"
+                    },
+                    "approvedAmount": {
+                      "type": "number",
+                      "nullable": true,
+                      "example": 15000
+                    },
+                    "assignedInterestRate": {
+                      "type": "number",
+                      "nullable": true,
+                      "example": 0.42
+                    },
+                    "riskAssessmentId": {
+                      "type": "string",
+                      "example": "risk-001"
+                    },
+                    "calculatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-03-30T12:00:01.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get credit decision by application id",
+        "tags": [
+          "loan-decisions"
+        ]
+      }
+    },
+    "/loan-decisions/risk-assessments/{riskAssessmentId}": {
+      "get": {
+        "operationId": "LoanDecisionController_getRiskAssessmentById",
+        "parameters": [
+          {
+            "name": "riskAssessmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "risk-001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "riskAssessmentId": {
+                      "type": "string",
+                      "example": "risk-001"
+                    },
+                    "applicationId": {
+                      "type": "string",
+                      "example": "loan-app-001"
+                    },
+                    "applicantId": {
+                      "type": "string",
+                      "example": "applicant-001"
+                    },
+                    "riskLevel": {
+                      "type": "object",
+                      "properties": {
+                        "probabilityOfDefaultUpperLimit": {
+                          "type": "number",
+                          "example": 0.22
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "LOW"
+                        }
+                      }
+                    },
+                    "riskAnalysisResult": {
+                      "type": "object"
+                    },
+                    "calculatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-03-30T12:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get risk assessment by id",
+        "tags": [
+          "loan-decisions"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Loan Decision Service API",
+    "description": "OpenAPI documentation for loan-decision-service",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}
