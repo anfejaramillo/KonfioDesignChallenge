@@ -1,3 +1,6 @@
+/**
+ * Integration event emitted after a credit decision is computed and persisted.
+ */
 export interface CreditDecisionMadeEvent {
   eventId: string;
   eventType: 'creditDecisionMade';

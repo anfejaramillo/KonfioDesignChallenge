@@ -1,3 +1,6 @@
+/**
+ * Domain integration event published when a loan application is created.
+ */
 export interface LoanApplicationCreatedEvent {
   eventId: string;
   eventType: 'loanApplicationCreated';

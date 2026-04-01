@@ -1,3 +1,6 @@
+/**
+ * HTTP payload for `POST /loan-applications/events/credit-decision-made`.
+ */
 export interface CreditDecisionMadeHttpDto {
   eventId: string;
   eventType: 'creditDecisionMade';

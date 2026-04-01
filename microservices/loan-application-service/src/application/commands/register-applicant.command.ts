@@ -1,3 +1,6 @@
+/**
+ * Input contract for registering an applicant profile.
+ */
 export interface RegisterApplicantCommand {
   id: string;
   name: string;

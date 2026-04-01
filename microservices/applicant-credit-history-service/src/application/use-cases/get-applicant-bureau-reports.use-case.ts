@@ -5,6 +5,9 @@ import {
 } from '../../domain/repositories/applicant-credit-history.repository';
 import { ApplicantBureauReportsResult } from '../dto/get-applicant-bureau-reports.result';
 
+/**
+ * Query use case that returns all bureau reports for an applicant.
+ */
 @Injectable()
 export class GetApplicantBureauReportsUseCase {
   constructor(
@@ -12,6 +15,9 @@ export class GetApplicantBureauReportsUseCase {
     private readonly repository: ApplicantCreditHistoryRepository,
   ) {}
 
+  /**
+   * Loads domain entities and maps them to read-model DTOs.
+   */
   async execute(applicantId: string): Promise<ApplicantBureauReportsResult> {
     const reports = await this.repository.findBureauReportsByApplicantId(applicantId);
 

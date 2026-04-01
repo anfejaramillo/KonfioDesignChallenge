@@ -9,12 +9,18 @@ import { InMemoryIdempotencyStoreAdapter } from '../../src/infrastructure/idempo
 class EventBusStub {
   public published = 0;
 
+  /**
+   * Tracks publish attempts to assert side effects in tests.
+   */
   async publishCreditDecisionMade(_: unknown): Promise<void> {
     this.published += 1;
   }
 }
 
 class LoanApplicationContextStub {
+  /**
+   * Returns deterministic context to keep tests focused on decision behavior.
+   */
   async findDecisionContextByApplicationId(): Promise<{
     requestedAmount: number;
     policy: {
@@ -69,6 +75,7 @@ describe('MakeCreditDecisionUseCase', () => {
     const first = await useCase.execute(command);
     const second = await useCase.execute(command);
 
+    // First call should process normally; second should be idempotently ignored.
     expect(first.status).toBe('PROCESSED');
     expect(first.decision).toBe('APPROVED');
     expect(second.status).toBe('DUPLICATE_IGNORED');
@@ -113,6 +120,7 @@ describe('MakeCreditDecisionUseCase', () => {
       decision: 'APPROVED',
     });
 
+    // Read models should expose previously persisted data.
     expect(decision.applicationId).toBe('application-2');
     expect(assessment.riskAssessmentId).toBe('risk-2');
     expect(decisions).toHaveLength(1);

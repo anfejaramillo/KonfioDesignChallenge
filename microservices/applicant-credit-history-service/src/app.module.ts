@@ -7,6 +7,10 @@ import { LoanApplicationCreatedHandler } from './interfaces/event-handlers/loan-
 import { ApplicantCreditHistoryController } from './interfaces/http/applicant-credit-history.controller';
 import { providers } from './infrastructure/wiring/providers';
 
+/**
+ * Root NestJS module for the applicant-credit-history bounded context.
+ * It wires interfaces, application use cases, domain services, and adapters.
+ */
 @Module({
   controllers: [ApplicantCreditHistoryController],
   providers: [

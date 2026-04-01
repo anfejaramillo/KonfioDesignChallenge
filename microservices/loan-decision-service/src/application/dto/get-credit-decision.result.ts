@@ -1,3 +1,6 @@
+/**
+ * DTO returned when a credit decision is queried by application id.
+ */
 export interface GetCreditDecisionResult {
   decisionId: string;
   applicationId: string;

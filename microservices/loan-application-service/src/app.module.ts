@@ -10,6 +10,9 @@ import { RegisterLoanProductUseCase } from './application/use-cases/register-loa
 import { LoanApplicationDomainService } from './domain/services/loan-application-domain.service';
 import { providers } from './infrastructure/wiring/providers';
 
+/**
+ * Root NestJS module that wires interface, application, domain and infrastructure layers.
+ */
 @Module({
   controllers: [LoanApplicationController],
   providers: [

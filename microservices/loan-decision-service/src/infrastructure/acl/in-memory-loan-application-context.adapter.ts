@@ -6,10 +6,14 @@ import {
 
 @Injectable()
 export class InMemoryLoanApplicationContextAdapter implements LoanApplicationContextPort {
+  /**
+   * Returns deterministic in-memory context values for local development.
+   */
   async findDecisionContextByApplicationId(
     applicationId: string,
     correlationId: string,
   ): Promise<DecisionContext> {
+    // Keep parameters explicitly referenced to avoid lint errors in this adapter stub.
     void applicationId;
     void correlationId;
 

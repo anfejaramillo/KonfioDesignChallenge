@@ -1,3 +1,6 @@
+/**
+ * Input contract for processing a `creditDecisionMade` integration event.
+ */
 export interface ProcessCreditDecisionCommand {
   eventId: string;
   eventType: 'creditDecisionMade';

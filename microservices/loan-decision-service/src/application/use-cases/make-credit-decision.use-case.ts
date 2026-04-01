@@ -31,7 +31,12 @@ export class MakeCreditDecisionUseCase {
     private readonly domainService: LoanDecisionDomainService,
   ) {}
 
+  /**
+   * Processes a completed risk assessment into a credit decision in an idempotent way.
+   */
   async execute(command: MakeCreditDecisionCommand): Promise<MakeCreditDecisionResult> {
+    this.assertValidOccurredAt(command.occurredAt);
+
     const alreadyProcessed = await this.idempotencyStore.exists(command.idempotencyKey);
     if (alreadyProcessed) {
       return {
@@ -42,28 +47,9 @@ export class MakeCreditDecisionUseCase {
       };
     }
 
-    const decisionContext =
-      command.requestedAmount !== undefined && command.policy
-        ? {
-            requestedAmount: command.requestedAmount,
-            policy: command.policy,
-          }
-        : await this.loanApplicationContext.findDecisionContextByApplicationId(
-            command.applicationId,
-            command.correlationId,
-          );
-
-    const assessment = new RiskAssessment(
-      command.riskAssessmentId,
-      command.applicationId,
-      command.applicantId,
-      new RiskLevel(
-        command.riskLevel.probabilityOfDefaultUpperLimit,
-        command.riskLevel.description,
-      ),
-      command.riskAnalysisResult,
-      new Date(command.occurredAt),
-    );
+    // Resolve policy context either from payload override or ACL lookup.
+    const decisionContext = await this.resolveDecisionContext(command);
+    const assessment = this.buildRiskAssessment(command);
 
     await this.repository.saveRiskAssessment(assessment);
 
@@ -83,6 +69,8 @@ export class MakeCreditDecisionUseCase {
       decisionContext.requestedAmount,
       decisionContext.policy,
     );
+
+    // Apply domain outcome to the aggregate state and persist it.
     this.domainService.applyOutcome(decision, outcome);
 
     await this.repository.saveCreditDecision(decision);
@@ -110,5 +98,55 @@ export class MakeCreditDecisionUseCase {
       decision: decision.status,
       status: 'PROCESSED',
     };
+  }
+
+  /**
+   * Resolves decision context from command payload or ACL port.
+   */
+  private async resolveDecisionContext(command: MakeCreditDecisionCommand): Promise<{
+    requestedAmount: number;
+    policy: {
+      maxProbabilityOfDefaultForApproval: number;
+      manualApprovalRequired: boolean;
+      baseInterestRate: number;
+    };
+  }> {
+    if (command.requestedAmount !== undefined && command.policy) {
+      return {
+        requestedAmount: command.requestedAmount,
+        policy: command.policy,
+      };
+    }
+
+    return this.loanApplicationContext.findDecisionContextByApplicationId(
+      command.applicationId,
+      command.correlationId,
+    );
+  }
+
+  /**
+   * Creates a `RiskAssessment` aggregate from the incoming command payload.
+   */
+  private buildRiskAssessment(command: MakeCreditDecisionCommand): RiskAssessment {
+    return new RiskAssessment(
+      command.riskAssessmentId,
+      command.applicationId,
+      command.applicantId,
+      new RiskLevel(
+        command.riskLevel.probabilityOfDefaultUpperLimit,
+        command.riskLevel.description,
+      ),
+      command.riskAnalysisResult,
+      new Date(command.occurredAt),
+    );
+  }
+
+  /**
+   * Validates that `occurredAt` is a parseable ISO datetime string.
+   */
+  private assertValidOccurredAt(occurredAt: string): void {
+    if (Number.isNaN(new Date(occurredAt).getTime())) {
+      throw new Error('occurredAt must be a valid ISO date string');
+    }
   }
 }

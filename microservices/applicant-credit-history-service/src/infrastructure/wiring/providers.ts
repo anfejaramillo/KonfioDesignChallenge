@@ -7,6 +7,9 @@ import { InMemoryIdempotencyStoreAdapter } from '../idempotency/in-memory-idempo
 import { EventBridgeEventBusAdapter } from '../messaging/eventbridge-event-bus.adapter';
 import { InMemoryApplicantCreditHistoryRepository } from '../persistence/in-memory-applicant-credit-history.repository';
 
+/**
+ * Default provider bindings for local execution.
+ */
 export const providers = [
   {
     provide: APPLICANT_CREDIT_HISTORY_REPOSITORY,

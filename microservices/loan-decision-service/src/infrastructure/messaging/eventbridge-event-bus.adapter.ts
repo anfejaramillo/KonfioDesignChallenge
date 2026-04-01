@@ -6,6 +6,10 @@ import { CreditDecisionMadeEvent } from '../../domain/events/credit-decision-mad
 export class EventBridgeEventBusAdapter implements EventBusPort {
   private readonly logger = new Logger(EventBridgeEventBusAdapter.name);
 
+  /**
+   * Publishes integration event to the bus.
+   * This implementation only logs payloads for local development.
+   */
   async publishCreditDecisionMade(event: CreditDecisionMadeEvent): Promise<void> {
     this.logger.log(
       JSON.stringify({

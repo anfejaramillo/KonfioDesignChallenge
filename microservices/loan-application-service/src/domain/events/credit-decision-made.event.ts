@@ -1,3 +1,6 @@
+/**
+ * Domain integration event emitted by external risk assessment context.
+ */
 export interface CreditDecisionMadeEvent {
   eventId: string;
   eventType: 'creditDecisionMade';

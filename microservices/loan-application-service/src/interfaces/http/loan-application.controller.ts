@@ -36,6 +36,9 @@ import { RegisterLoanProductHttpDto } from './dto/register-loan-product.http.dto
 @ApiTags('loan-applications')
 @Controller('loan-applications')
 export class LoanApplicationController {
+  /**
+   * Builds the HTTP controller with all application use cases.
+   */
   constructor(
     private readonly registerApplicantUseCase: RegisterApplicantUseCase,
     private readonly registerLoanProductUseCase: RegisterLoanProductUseCase,
@@ -74,7 +77,11 @@ export class LoanApplicationController {
     },
   })
   @ApiBadRequestResponse({ description: 'Validation error in request body' })
+  /**
+   * Registers an applicant from HTTP payload.
+   */
   async registerApplicant(@Body() body: RegisterApplicantHttpDto): Promise<{ applicantId: string }> {
+    // Validate payload shape before delegating to the use case.
     this.assertString(body.id, 'id');
     this.assertString(body.name, 'name');
     this.assertString(body.dni, 'dni');
@@ -84,6 +91,7 @@ export class LoanApplicationController {
     this.assertString(body.email, 'email');
     this.assertString(body.idempotencyKey, 'idempotencyKey');
 
+    // Map transport DTO into application command.
     return this.registerApplicantUseCase.execute({
       id: body.id,
       name: body.name,
@@ -141,7 +149,11 @@ export class LoanApplicationController {
     },
   })
   @ApiBadRequestResponse({ description: 'Validation error in request body' })
+  /**
+   * Registers a loan product from HTTP payload.
+   */
   async registerLoanProduct(@Body() body: RegisterLoanProductHttpDto): Promise<{ loanProductId: string }> {
+    // Validate payload shape before delegating to the use case.
     this.assertString(body.id, 'id');
     this.assertString(body.name, 'name');
     this.assertNumber(body.term, 'term');
@@ -153,6 +165,7 @@ export class LoanApplicationController {
     this.assertNumber(body.maxAmount, 'maxAmount');
     this.assertString(body.idempotencyKey, 'idempotencyKey');
 
+    // Enforce semantic constraints at API boundary.
     if (body.minAmount > body.maxAmount) {
       throw new BadRequestException('minAmount cannot be greater than maxAmount');
     }
@@ -161,6 +174,7 @@ export class LoanApplicationController {
       throw new BadRequestException('timePeriodType must be DAILY, WEEKLY or MONTHLY');
     }
 
+    // Map transport DTO into application command.
     return this.registerLoanProductUseCase.execute({
       id: body.id,
       name: body.name,
@@ -217,7 +231,11 @@ export class LoanApplicationController {
     },
   })
   @ApiBadRequestResponse({ description: 'Validation error in request body' })
+  /**
+   * Creates a loan application from HTTP payload.
+   */
   async create(@Body() body: CreateLoanApplicationHttpDto): Promise<{ applicationId: string; status: string }> {
+    // Validate payload shape before delegating to the use case.
     this.assertString(body.applicationId, 'applicationId');
     this.assertString(body.applicantId, 'applicantId');
     this.assertString(body.loanProductId, 'loanProductId');
@@ -227,6 +245,7 @@ export class LoanApplicationController {
     this.assertString(body.idempotencyKey, 'idempotencyKey');
     this.assertString(body.correlationId, 'correlationId');
 
+    // Map transport DTO into application command.
     return this.createLoanApplicationUseCase.execute({
       applicationId: body.applicationId,
       applicantId: body.applicantId,
@@ -266,6 +285,9 @@ export class LoanApplicationController {
     },
   })
   @ApiBadRequestResponse({ description: 'Invalid query params' })
+  /**
+   * Lists loan applications with optional query filters.
+   */
   async getAll(
     @Query('applicantId') applicantId?: string,
     @Query('status') status?: LoanApplicationStatus,
@@ -280,10 +302,12 @@ export class LoanApplicationController {
       requestedAt: string;
     }[]
   > {
+    // Validate enum-like query values.
     if (status && !['UNDER_REVIEW', 'APPROVED', 'REJECTED'].includes(status)) {
       throw new BadRequestException('status must be UNDER_REVIEW, APPROVED or REJECTED');
     }
 
+    // Delegate query execution to application layer.
     return this.listLoanApplicationsUseCase.execute({ applicantId, status });
   }
 
@@ -308,6 +332,9 @@ export class LoanApplicationController {
   })
   @ApiNotFoundResponse({ description: 'Loan application not found' })
   @ApiBadRequestResponse({ description: 'Invalid path param' })
+  /**
+   * Returns one loan application by id.
+   */
   async getById(@Param('applicationId') applicationId: string): Promise<{
     applicationId: string;
     applicantId: string;
@@ -317,6 +344,7 @@ export class LoanApplicationController {
     status: LoanApplicationStatus;
     requestedAt: string;
   }> {
+    // Validate path parameter before querying.
     this.assertString(applicationId, 'applicationId');
     return this.getLoanApplicationUseCase.execute(applicationId);
   }
@@ -368,9 +396,13 @@ export class LoanApplicationController {
   })
   @ApiBadRequestResponse({ description: 'Validation error in request body' })
   @ApiNotFoundResponse({ description: 'Loan application not found' })
+  /**
+   * Processes a credit decision event received over HTTP.
+   */
   async processCreditDecision(
     @Body() body: CreditDecisionMadeHttpDto,
   ): Promise<{ applicationId: string; status: LoanApplicationStatus }> {
+    // Validate mandatory event fields.
     this.assertString(body.eventId, 'eventId');
     this.assertString(body.aggregateId, 'aggregateId');
     this.assertString(body.idempotencyKey, 'idempotencyKey');
@@ -381,6 +413,7 @@ export class LoanApplicationController {
     this.assertString(body.decision, 'decision');
     this.assertString(body.eventType, 'eventType');
 
+    // Validate constrained event values.
     if (body.eventType !== 'creditDecisionMade') {
       throw new BadRequestException('eventType must be creditDecisionMade');
     }
@@ -393,6 +426,7 @@ export class LoanApplicationController {
       throw new BadRequestException('occurredAt must be an ISO date');
     }
 
+    // Validate optional numeric fields when provided.
     if (body.approvedAmount !== undefined) {
       this.assertNumber(body.approvedAmount, 'approvedAmount');
     }
@@ -401,6 +435,7 @@ export class LoanApplicationController {
       this.assertNumber(body.interestRate, 'interestRate');
     }
 
+    // Map transport DTO into application command.
     return this.processCreditDecisionUseCase.execute({
       eventId: body.eventId,
       eventType: body.eventType,
@@ -416,13 +451,21 @@ export class LoanApplicationController {
     });
   }
 
+  /**
+   * Validates that a value is a non-empty string.
+   */
   private assertString(value: unknown, fieldName: string): void {
+    // Guard against missing and blank string values.
     if (typeof value !== 'string' || value.trim().length === 0) {
       throw new BadRequestException(`${fieldName} must be a non-empty string`);
     }
   }
 
+  /**
+   * Validates that a value is a finite number.
+   */
   private assertNumber(value: unknown, fieldName: string): void {
+    // Guard against non-numeric or NaN values.
     if (typeof value !== 'number' || Number.isNaN(value)) {
       throw new BadRequestException(`${fieldName} must be a valid number`);
     }

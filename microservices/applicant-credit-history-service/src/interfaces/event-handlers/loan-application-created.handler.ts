@@ -2,12 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { LoanApplicationCreatedEvent } from '../../domain/events/loan-application-created.event';
 import { FetchApplicantCreditHistoryUseCase } from '../../application/use-cases/fetch-applicant-credit-history.use-case';
 
+/**
+ * Event handler that translates loanApplicationCreated events
+ * into application commands.
+ */
 @Injectable()
 export class LoanApplicationCreatedHandler {
   private readonly logger = new Logger(LoanApplicationCreatedHandler.name);
 
   constructor(private readonly useCase: FetchApplicantCreditHistoryUseCase) {}
 
+  /**
+   * Logs source event metadata and delegates orchestration to the use case.
+   */
   async handle(event: LoanApplicationCreatedEvent): Promise<void> {
     this.logger.log(
       JSON.stringify({

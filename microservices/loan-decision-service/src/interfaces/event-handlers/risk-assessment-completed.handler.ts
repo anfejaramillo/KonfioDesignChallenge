@@ -9,6 +9,9 @@ export class RiskAssessmentCompletedHandler {
 
   constructor(private readonly useCase: MakeCreditDecisionUseCase) {}
 
+  /**
+   * Handles `riskAssesmentCompleted` events and triggers decision workflow.
+   */
   async handle(event: RiskAssessmentCompletedEvent): Promise<void> {
     this.logger.log(
       JSON.stringify({
@@ -21,6 +24,7 @@ export class RiskAssessmentCompletedHandler {
       }),
     );
 
+    // Generate decision id here because upstream event only carries risk assessment metadata.
     await this.useCase.execute({
       eventId: event.eventId,
       eventType: event.eventType,

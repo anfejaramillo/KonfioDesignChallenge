@@ -1,3 +1,6 @@
+/**
+ * HTTP payload for `POST /loan-applications/products`.
+ */
 export interface RegisterLoanProductHttpDto {
   id: string;
   name: string;

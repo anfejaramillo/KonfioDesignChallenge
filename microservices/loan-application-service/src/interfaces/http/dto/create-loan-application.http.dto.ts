@@ -1,3 +1,6 @@
+/**
+ * HTTP payload for `POST /loan-applications`.
+ */
 export interface CreateLoanApplicationHttpDto {
   applicationId: string;
   applicantId: string;

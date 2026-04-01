@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+/**
+ * Bootstraps the HTTP application, OpenAPI docs, and JSON spec download route.
+ */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  // Builds the OpenAPI metadata exposed through Swagger UI.
   const config = new DocumentBuilder()
     .setTitle('Applicant Credit History Service API')
     .setDescription('OpenAPI documentation for applicant-credit-history-service')
@@ -19,6 +23,7 @@ async function bootstrap(): Promise<void> {
     },
   });
 
+  // Exposes the generated OpenAPI schema as a downloadable JSON file.
   const httpAdapter = app.getHttpAdapter();
   httpAdapter.get('/public/openapi.json', (_req: unknown, res: any) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');

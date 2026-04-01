@@ -5,11 +5,15 @@ import { CreateLoanApplicationUseCase } from '../../src/application/use-cases/cr
 import { LoanApplicationDomainService } from '../../src/domain/services/loan-application-domain.service';
 
 class EventBusStub {
+  /**
+   * No-op publisher used by tests that do not assert event side effects.
+   */
   async publishLoanApplicationCreated(_: unknown): Promise<void> {}
 }
 
 describe('ProcessCreditDecisionUseCase', () => {
   it('updates loan application status to APPROVED', async () => {
+    // Arrange baseline repository state and create an application first.
     const repository = new InMemoryLoanApplicationRepository();
     const idempotencyStore = new InMemoryIdempotencyStoreAdapter();
 
@@ -33,6 +37,7 @@ describe('ProcessCreditDecisionUseCase', () => {
 
     const useCase = new ProcessCreditDecisionUseCase(repository, idempotencyStore);
 
+    // Act by processing an approval decision event.
     const result = await useCase.execute({
       eventId: 'evt-201',
       eventType: 'creditDecisionMade',
@@ -47,10 +52,12 @@ describe('ProcessCreditDecisionUseCase', () => {
       occurredAt: new Date().toISOString(),
     });
 
+    // Assert resulting aggregate status.
     expect(result.status).toBe('APPROVED');
   });
 
   it('is idempotent for duplicate events', async () => {
+    // Arrange baseline repository state and create an application first.
     const repository = new InMemoryLoanApplicationRepository();
     const idempotencyStore = new InMemoryIdempotencyStoreAdapter();
 
@@ -85,9 +92,11 @@ describe('ProcessCreditDecisionUseCase', () => {
       occurredAt: new Date().toISOString(),
     };
 
+    // Act twice using the same event idempotency key.
     await useCase.execute(command);
     const duplicateResult = await useCase.execute(command);
 
+    // Assert duplicate processing preserves final state.
     expect(duplicateResult.status).toBe('REJECTED');
   });
 });

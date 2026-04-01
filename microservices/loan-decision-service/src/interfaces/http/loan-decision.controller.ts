@@ -34,6 +34,9 @@ export class LoanDecisionController {
     private readonly listCreditDecisionsUseCase: ListCreditDecisionsUseCase,
   ) {}
 
+  /**
+   * Receives `riskAssesmentCompleted` event payload and delegates decision processing.
+   */
   @Post('events/risk-assessment-completed')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -105,6 +108,7 @@ export class LoanDecisionController {
     decision: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW';
     status: 'PROCESSED' | 'DUPLICATE_IGNORED';
   }> {
+    // Validate event envelope.
     this.assertString(body.eventId, 'eventId');
     this.assertString(body.aggregateId, 'aggregateId');
     this.assertString(body.decisionId, 'decisionId');
@@ -114,6 +118,7 @@ export class LoanDecisionController {
     this.assertString(body.idempotencyKey, 'idempotencyKey');
     this.assertString(body.correlationId, 'correlationId');
     this.assertString(body.occurredAt, 'occurredAt');
+    this.assertIsoDate(body.occurredAt, 'occurredAt');
 
     if (body.eventType !== 'riskAssesmentCompleted') {
       throw new BadRequestException('eventType must be riskAssesmentCompleted');
@@ -135,6 +140,7 @@ export class LoanDecisionController {
       this.assertNumber(body.policy.baseInterestRate, 'policy.baseInterestRate');
     }
 
+    // Delegate orchestration to application use case.
     return this.makeCreditDecisionUseCase.execute({
       eventId: body.eventId,
       eventType: body.eventType,
@@ -164,6 +170,9 @@ export class LoanDecisionController {
       },
     },
   })
+  /**
+   * Returns service liveliness information.
+   */
   async health(): Promise<{ message: string }> {
     return { message: 'Loan Decision Service is running.' };
   }
@@ -191,6 +200,9 @@ export class LoanDecisionController {
       },
     },
   })
+  /**
+   * Lists decisions and applies optional query filters.
+   */
   async getAllDecisions(
     @Query('applicantId') applicantId?: string,
     @Query('decision') decision?: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW',
@@ -232,6 +244,9 @@ export class LoanDecisionController {
       },
     },
   })
+  /**
+   * Gets credit decision by application id.
+   */
   async getDecisionByApplicationId(@Param('applicationId') applicationId: string): Promise<{
     decisionId: string;
     applicationId: string;
@@ -269,6 +284,9 @@ export class LoanDecisionController {
       },
     },
   })
+  /**
+   * Gets risk assessment by risk assessment id.
+   */
   async getRiskAssessmentById(@Param('riskAssessmentId') riskAssessmentId: string): Promise<{
     riskAssessmentId: string;
     applicationId: string;
@@ -284,21 +302,39 @@ export class LoanDecisionController {
     return this.getRiskAssessmentUseCase.execute(riskAssessmentId);
   }
 
+  /**
+   * Asserts a non-empty string field.
+   */
   private assertString(value: unknown, fieldName: string): void {
     if (typeof value !== 'string' || value.trim().length === 0) {
       throw new BadRequestException(`${fieldName} must be a non-empty string`);
     }
   }
 
+  /**
+   * Asserts a numeric field.
+   */
   private assertNumber(value: unknown, fieldName: string): void {
     if (typeof value !== 'number' || Number.isNaN(value)) {
       throw new BadRequestException(`${fieldName} must be a valid number`);
     }
   }
 
+  /**
+   * Asserts a boolean field.
+   */
   private assertBoolean(value: unknown, fieldName: string): void {
     if (typeof value !== 'boolean') {
       throw new BadRequestException(`${fieldName} must be boolean`);
+    }
+  }
+
+  /**
+   * Asserts a valid ISO date field.
+   */
+  private assertIsoDate(value: string, fieldName: string): void {
+    if (Number.isNaN(new Date(value).getTime())) {
+      throw new BadRequestException(`${fieldName} must be a valid ISO date`);
     }
   }
 }

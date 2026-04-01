@@ -1,3 +1,6 @@
+/**
+ * HTTP payload for `POST /loan-applications/applicants`.
+ */
 export interface RegisterApplicantHttpDto {
   id: string;
   name: string;

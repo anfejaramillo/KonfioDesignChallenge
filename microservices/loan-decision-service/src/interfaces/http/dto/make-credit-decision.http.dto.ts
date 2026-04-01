@@ -1,3 +1,6 @@
+/**
+ * HTTP payload for manual/replayed processing of `riskAssesmentCompleted` events.
+ */
 export interface MakeCreditDecisionHttpDto {
   eventId: string;
   eventType: 'riskAssesmentCompleted';

@@ -17,6 +17,9 @@ import { CreateLoanApplicationResult } from '../dto/create-loan-application.resu
 
 @Injectable()
 export class CreateLoanApplicationUseCase {
+  /**
+   * Builds the use case with repository, integration bus, idempotency store and domain service.
+   */
   constructor(
     @Inject(LOAN_APPLICATION_REPOSITORY)
     private readonly repository: LoanApplicationRepository,
@@ -27,9 +30,14 @@ export class CreateLoanApplicationUseCase {
     private readonly domainService: LoanApplicationDomainService,
   ) {}
 
+  /**
+   * Creates a loan application, validates domain rules, persists it and publishes an integration event.
+   */
   async execute(command: CreateLoanApplicationCommand): Promise<CreateLoanApplicationResult> {
+    // Enforce idempotency before any mutable operation.
     const alreadyProcessed = await this.idempotencyStore.exists(command.idempotencyKey);
     if (alreadyProcessed) {
+      // Return current state for retried requests using the same key.
       const existingApplication = await this.repository.findApplicationById(command.applicationId);
       return {
         applicationId: command.applicationId,
@@ -37,6 +45,7 @@ export class CreateLoanApplicationUseCase {
       };
     }
 
+    // Resolve referenced aggregate roots required for creation.
     const product = await this.repository.findLoanProductById(command.loanProductId);
     if (!product) {
       throw new Error('Loan product not found');
@@ -47,6 +56,7 @@ export class CreateLoanApplicationUseCase {
       throw new Error('Applicant not found');
     }
 
+    // Build the aggregate in initial UNDER_REVIEW state.
     const application = new LoanApplication(
       command.applicationId,
       command.applicantId,
@@ -57,8 +67,10 @@ export class CreateLoanApplicationUseCase {
       new Date(),
     );
 
+    // Validate business invariants before persisting.
     this.domainService.validateCreation(application, product);
 
+    // Persist aggregate and publish domain-to-integration event.
     await this.repository.saveLoanApplication(application);
     await this.eventBus.publishLoanApplicationCreated({
       eventId: randomUUID(),
@@ -74,6 +86,7 @@ export class CreateLoanApplicationUseCase {
       status: application.status,
       occurredAt: new Date().toISOString(),
     });
+    // Mark command as processed for one week.
     await this.idempotencyStore.save(command.idempotencyKey, 60 * 60 * 24 * 7);
 
     return {

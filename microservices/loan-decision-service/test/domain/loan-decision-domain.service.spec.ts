@@ -21,6 +21,7 @@ describe('LoanDecisionDomainService', () => {
       baseInterestRate: 0.2,
     });
 
+    // Approved decision returns requested amount plus risk-adjusted rate.
     expect(outcome.status).toBe('APPROVED');
     expect(outcome.approvedAmount).toBe(15000);
     expect(outcome.assignedInterestRate).toBe(0.4);
@@ -42,6 +43,7 @@ describe('LoanDecisionDomainService', () => {
       baseInterestRate: 0.2,
     });
 
+    // Manual policy prevents auto-approval/rejection.
     expect(outcome.status).toBe('UNDER_REVIEW');
     expect(outcome.approvedAmount).toBeNull();
     expect(outcome.assignedInterestRate).toBeNull();

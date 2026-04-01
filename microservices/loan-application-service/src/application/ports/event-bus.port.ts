@@ -2,6 +2,12 @@ import { LoanApplicationCreatedEvent } from '../../domain/events/loan-applicatio
 
 export const EVENT_BUS_PORT = Symbol('EVENT_BUS_PORT');
 
+/**
+ * Application port for publishing integration events.
+ */
 export interface EventBusPort {
+  /**
+   * Publishes a `loanApplicationCreated` event to the configured transport.
+   */
   publishLoanApplicationCreated(event: LoanApplicationCreatedEvent): Promise<void>;
 }

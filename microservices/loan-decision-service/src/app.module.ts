@@ -8,6 +8,9 @@ import { RiskAssessmentCompletedHandler } from './interfaces/event-handlers/risk
 import { LoanDecisionController } from './interfaces/http/loan-decision.controller';
 import { providers } from './infrastructure/wiring/providers';
 
+/**
+ * Root module that wires application, domain, infrastructure, and interfaces layers.
+ */
 @Module({
   controllers: [LoanDecisionController],
   providers: [

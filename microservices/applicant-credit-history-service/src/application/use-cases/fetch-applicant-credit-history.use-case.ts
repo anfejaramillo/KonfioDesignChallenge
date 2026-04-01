@@ -11,6 +11,12 @@ import {
 } from '../../domain/repositories/applicant-credit-history.repository';
 import { ApplicantCreditHistoryDomainService } from '../../domain/services/applicant-credit-history-domain.service';
 
+/** Idempotency retention: 7 days. */
+const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24 * 7;
+
+/**
+ * Orchestrates applicant credit-history enrichment when a loan application is created.
+ */
 @Injectable()
 export class FetchApplicantCreditHistoryUseCase {
   constructor(
@@ -25,7 +31,12 @@ export class FetchApplicantCreditHistoryUseCase {
     private readonly domainService: ApplicantCreditHistoryDomainService,
   ) {}
 
+  /**
+   * Executes the full flow: idempotency check, bureau fetch, persistence,
+   * integration event publication, and idempotency key registration.
+   */
   async execute(command: FetchApplicantCreditHistoryCommand): Promise<FetchApplicantCreditHistoryResult> {
+    // Short-circuit duplicate events to guarantee idempotent processing.
     const alreadyProcessed = await this.idempotencyStore.exists(command.idempotencyKey);
     if (alreadyProcessed) {
       return {
@@ -36,6 +47,7 @@ export class FetchApplicantCreditHistoryUseCase {
       };
     }
 
+    // Uses provided responses (tests/replays) or fetches from the ACL.
     const bureauResponses =
       command.bureauResponses ??
       (await this.creditBureauAcl.fetchByApplicantId(command.applicantId, command.correlationId));
@@ -43,6 +55,7 @@ export class FetchApplicantCreditHistoryUseCase {
     let reportsStored = 0;
     let scoresUpdated = 0;
 
+    // Persists bureau reports and their normalized scores per provider.
     for (const response of bureauResponses) {
       const report = this.domainService.createBureauReport(command.applicantId, response);
       await this.repository.saveBureauReport(report);
@@ -56,6 +69,7 @@ export class FetchApplicantCreditHistoryUseCase {
       scoresUpdated += 1;
     }
 
+    // Publishes integration event after successful persistence.
     await this.eventBus.publishBureauDataFetched({
       eventId: randomUUID(),
       eventType: 'bureauDataFetched',
@@ -70,7 +84,8 @@ export class FetchApplicantCreditHistoryUseCase {
       occurredAt: new Date().toISOString(),
     });
 
-    await this.idempotencyStore.save(command.idempotencyKey, 60 * 60 * 24 * 7);
+    // Marks command as processed to prevent duplicated side effects.
+    await this.idempotencyStore.save(command.idempotencyKey, IDEMPOTENCY_TTL_SECONDS);
 
     return {
       applicantId: command.applicantId,

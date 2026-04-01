@@ -12,12 +12,16 @@ export class GetRiskAssessmentUseCase {
     private readonly repository: LoanDecisionRepository,
   ) {}
 
+  /**
+   * Retrieves a persisted risk assessment by id.
+   */
   async execute(riskAssessmentId: string): Promise<GetRiskAssessmentResult> {
     const assessment = await this.repository.findRiskAssessmentById(riskAssessmentId);
     if (!assessment) {
       throw new NotFoundException(`Risk assessment not found for id ${riskAssessmentId}`);
     }
 
+    // Translate domain entity to query DTO.
     return {
       riskAssessmentId: assessment.id,
       applicationId: assessment.applicationId,

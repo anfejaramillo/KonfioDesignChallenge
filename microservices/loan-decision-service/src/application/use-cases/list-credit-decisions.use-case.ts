@@ -12,12 +12,16 @@ export class ListCreditDecisionsUseCase {
     private readonly repository: LoanDecisionRepository,
   ) {}
 
+  /**
+   * Lists credit decisions optionally filtered by applicant and/or status.
+   */
   async execute(filters?: {
     applicantId?: string;
     decision?: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW';
   }): Promise<GetCreditDecisionResult[]> {
     const decisions = await this.repository.findDecisions(filters);
 
+    // Translate domain entities to query DTOs.
     return decisions.map((item) => ({
       decisionId: item.id,
       applicationId: item.applicationId,

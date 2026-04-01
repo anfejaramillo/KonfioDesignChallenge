@@ -1,5 +1,8 @@
 import { RiskLevel } from '../value-objects/risk-level.vo';
 
+/**
+ * Aggregate representing the risk analysis produced for a loan application.
+ */
 export class RiskAssessment {
   constructor(
     public readonly id: string,

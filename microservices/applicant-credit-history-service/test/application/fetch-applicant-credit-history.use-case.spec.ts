@@ -5,15 +5,27 @@ import { InMemoryIdempotencyStoreAdapter } from '../../src/infrastructure/idempo
 import { GetApplicantBureauReportsUseCase } from '../../src/application/use-cases/get-applicant-bureau-reports.use-case';
 import { GetLatestCreditScoresUseCase } from '../../src/application/use-cases/get-latest-credit-scores.use-case';
 
+/**
+ * Minimal event bus stub to track publication attempts.
+ */
 class EventBusStub {
   public published = 0;
 
+  /**
+   * Counts published events without external side effects.
+   */
   async publishBureauDataFetched(_: unknown): Promise<void> {
     this.published += 1;
   }
 }
 
+/**
+ * Deterministic ACL stub used to avoid external bureau dependencies.
+ */
 class CreditBureauAclStub {
+  /**
+   * Returns two provider responses with fixed scores for assertions.
+   */
   async fetchByApplicantId(): Promise<
     {
       providerName: string;
@@ -42,6 +54,9 @@ class CreditBureauAclStub {
   }
 }
 
+/**
+ * Integration-style tests for command/query application use cases.
+ */
 describe('FetchApplicantCreditHistoryUseCase', () => {
   it('returns duplicate status for repeated idempotency key', async () => {
     const repository = new InMemoryApplicantCreditHistoryRepository();
@@ -67,6 +82,7 @@ describe('FetchApplicantCreditHistoryUseCase', () => {
       occurredAt: '2026-03-30T00:00:00.000Z',
     };
 
+    // First call processes, second call should be ignored by idempotency gate.
     const first = await useCase.execute(command);
     const second = await useCase.execute(command);
 
@@ -101,6 +117,7 @@ describe('FetchApplicantCreditHistoryUseCase', () => {
       occurredAt: '2026-03-30T00:00:00.000Z',
     });
 
+    // Query side must expose data persisted by the command side.
     const reportsResult = await new GetApplicantBureauReportsUseCase(repository).execute('applicant-2');
     const latestScores = await new GetLatestCreditScoresUseCase(repository).execute('applicant-2');
 

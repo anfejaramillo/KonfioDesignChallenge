@@ -5,6 +5,9 @@ import { InMemoryIdempotencyStoreAdapter } from '../idempotency/in-memory-idempo
 import { EventBridgeEventBusAdapter } from '../messaging/eventbridge-event-bus.adapter';
 import { InMemoryLoanApplicationRepository } from '../persistence/in-memory-loan-application.repository';
 
+/**
+ * Infrastructure provider bindings for application ports and repository tokens.
+ */
 export const providers = [
   {
     provide: LOAN_APPLICATION_REPOSITORY,

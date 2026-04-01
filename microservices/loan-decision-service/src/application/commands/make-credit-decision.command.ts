@@ -1,3 +1,6 @@
+/**
+ * Command used by the application layer to process a completed risk assessment.
+ */
 export interface MakeCreditDecisionCommand {
   eventId: string;
   eventType: 'riskAssesmentCompleted';

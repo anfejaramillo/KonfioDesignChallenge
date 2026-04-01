@@ -1,3 +1,6 @@
+/**
+ * Input contract for creating a loan application.
+ */
 export interface CreateLoanApplicationCommand {
   applicationId: string;
   applicantId: string;

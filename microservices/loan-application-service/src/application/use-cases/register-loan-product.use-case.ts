@@ -15,6 +15,9 @@ import { RegisterLoanProductResult } from '../dto/register-loan-product.result';
 
 @Injectable()
 export class RegisterLoanProductUseCase {
+  /**
+   * Builds the use case with write repository and idempotency dependencies.
+   */
   constructor(
     @Inject(LOAN_APPLICATION_REPOSITORY)
     private readonly repository: LoanApplicationRepository,
@@ -22,12 +25,17 @@ export class RegisterLoanProductUseCase {
     private readonly idempotencyStore: IdempotencyStorePort,
   ) {}
 
+  /**
+   * Registers a loan product in an idempotent manner.
+   */
   async execute(command: RegisterLoanProductCommand): Promise<RegisterLoanProductResult> {
+    // Avoid duplicate writes for retried commands.
     const alreadyProcessed = await this.idempotencyStore.exists(command.idempotencyKey);
     if (alreadyProcessed) {
       return { loanProductId: command.id };
     }
 
+    // Build product aggregate with value objects.
     const product = new LoanProduct(
       command.id,
       command.name,
@@ -38,6 +46,7 @@ export class RegisterLoanProductUseCase {
       command.maxAmount,
     );
 
+    // Persist state and track idempotency key lifetime.
     await this.repository.saveLoanProduct(product);
     await this.idempotencyStore.save(command.idempotencyKey, 60 * 60 * 24 * 7);
 

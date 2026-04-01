@@ -12,6 +12,9 @@ export class InMemoryLoanApplicationRepository implements LoanApplicationReposit
   private readonly products = new Map<string, LoanProduct>();
   private readonly applications = new Map<string, LoanApplication>();
 
+  /**
+   * Seeds in-memory storage with a default applicant and product for local testing.
+   */
   constructor() {
     const seedApplicant = new Applicant(
       'applicant-seed-1',
@@ -37,34 +40,62 @@ export class InMemoryLoanApplicationRepository implements LoanApplicationReposit
     this.products.set(seedProduct.id, seedProduct);
   }
 
+  /**
+   * Persists an applicant by id.
+   */
   async saveApplicant(applicant: Applicant): Promise<void> {
+    // Upsert applicant into in-memory map.
     this.applicants.set(applicant.id, applicant);
   }
 
+  /**
+   * Persists a loan product by id.
+   */
   async saveLoanProduct(product: LoanProduct): Promise<void> {
+    // Upsert product into in-memory map.
     this.products.set(product.id, product);
   }
 
+  /**
+   * Persists a loan application by id.
+   */
   async saveLoanApplication(application: LoanApplication): Promise<void> {
+    // Upsert application into in-memory map.
     this.applications.set(application.id, application);
   }
 
+  /**
+   * Retrieves an applicant by id.
+   */
   async findApplicantById(id: string): Promise<Applicant | null> {
+    // Return null when applicant is absent.
     return this.applicants.get(id) ?? null;
   }
 
+  /**
+   * Retrieves a loan product by id.
+   */
   async findLoanProductById(id: string): Promise<LoanProduct | null> {
+    // Return null when product is absent.
     return this.products.get(id) ?? null;
   }
 
+  /**
+   * Retrieves a loan application by id.
+   */
   async findApplicationById(id: string): Promise<LoanApplication | null> {
+    // Return null when application is absent.
     return this.applications.get(id) ?? null;
   }
 
+  /**
+   * Lists applications matching optional applicant and status filters.
+   */
   async findApplications(filters?: {
     applicantId?: string;
     status?: LoanApplication['status'];
   }): Promise<LoanApplication[]> {
+    // Filter current in-memory applications set.
     return [...this.applications.values()].filter((application) => {
       const matchApplicant = !filters?.applicantId || application.applicantId === filters.applicantId;
       const matchStatus = !filters?.status || application.status === filters.status;
@@ -72,11 +103,19 @@ export class InMemoryLoanApplicationRepository implements LoanApplicationReposit
     });
   }
 
+  /**
+   * Lists all persisted applicants.
+   */
   async findApplicants(): Promise<Applicant[]> {
+    // Return a snapshot array from the map values.
     return [...this.applicants.values()];
   }
 
+  /**
+   * Lists all persisted loan products.
+   */
   async findLoanProducts(): Promise<LoanProduct[]> {
+    // Return a snapshot array from the map values.
     return [...this.products.values()];
   }
 }

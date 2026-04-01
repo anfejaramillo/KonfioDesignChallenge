@@ -1,3 +1,6 @@
+/**
+ * DTO returned when a stored risk assessment is queried by id.
+ */
 export interface GetRiskAssessmentResult {
   riskAssessmentId: string;
   applicationId: string;

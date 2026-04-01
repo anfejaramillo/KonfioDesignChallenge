@@ -1,5 +1,8 @@
 import { ApplicantCreditHistoryDomainService } from '../../src/domain/services/applicant-credit-history-domain.service';
 
+/**
+ * Unit tests for domain service normalization rules.
+ */
 describe('ApplicantCreditHistoryDomainService', () => {
   const service = new ApplicantCreditHistoryDomainService();
 

@@ -5,6 +5,7 @@ import { Currency } from '../../src/domain/value-objects/currency.vo';
 import { LoanTerms } from '../../src/domain/value-objects/loan-terms.vo';
 
 describe('LoanApplicationDomainService', () => {
+  // Shared domain service and product fixture for all test cases.
   const service = new LoanApplicationDomainService();
   const product = new LoanProduct(
     'product-1',
@@ -17,6 +18,7 @@ describe('LoanApplicationDomainService', () => {
   );
 
   it('accepts a valid amount and currency', () => {
+    // Arrange application that matches product constraints.
     const application = new LoanApplication(
       'app-1',
       'applicant-1',
@@ -27,10 +29,12 @@ describe('LoanApplicationDomainService', () => {
       new Date(),
     );
 
+    // Act + Assert: validation should not throw.
     expect(() => service.validateCreation(application, product)).not.toThrow();
   });
 
   it('rejects an amount outside product limits', () => {
+    // Arrange application with amount below product minimum.
     const application = new LoanApplication(
       'app-2',
       'applicant-1',
@@ -41,12 +45,14 @@ describe('LoanApplicationDomainService', () => {
       new Date(),
     );
 
+    // Act + Assert: validation should fail on amount rules.
     expect(() => service.validateCreation(application, product)).toThrow(
       'Requested amount is outside product limits',
     );
   });
 
   it('rejects currency mismatch', () => {
+    // Arrange application with different currency than product.
     const application = new LoanApplication(
       'app-3',
       'applicant-1',
@@ -57,6 +63,7 @@ describe('LoanApplicationDomainService', () => {
       new Date(),
     );
 
+    // Act + Assert: validation should fail on currency mismatch.
     expect(() => service.validateCreation(application, product)).toThrow(
       'Currency mismatch between application and product',
     );

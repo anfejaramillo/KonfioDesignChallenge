@@ -23,6 +23,9 @@ import { GetApplicantBureauReportsUseCase } from '../../application/use-cases/ge
 import { GetLatestCreditScoresUseCase } from '../../application/use-cases/get-latest-credit-scores.use-case';
 import { FetchApplicantCreditHistoryHttpDto } from './dto/fetch-applicant-credit-history.http.dto';
 
+/**
+ * HTTP controller for applicant credit-history commands and queries.
+ */
 @ApiTags('applicant-credit-history')
 @Controller('applicant-credit-history')
 export class ApplicantCreditHistoryController {
@@ -32,6 +35,9 @@ export class ApplicantCreditHistoryController {
     private readonly getLatestCreditScoresUseCase: GetLatestCreditScoresUseCase,
   ) {}
 
+  /**
+   * Ingests the source integration event and triggers credit-history orchestration.
+   */
   @Post('events/loan-application-created')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -81,6 +87,7 @@ export class ApplicantCreditHistoryController {
     scoresUpdated: number;
     status: 'PROCESSED' | 'DUPLICATE_IGNORED';
   }> {
+    // Validates required envelope fields before command orchestration.
     this.assertString(body.eventId, 'eventId');
     this.assertString(body.aggregateId, 'aggregateId');
     this.assertString(body.applicationId, 'applicationId');
@@ -110,6 +117,9 @@ export class ApplicantCreditHistoryController {
     });
   }
 
+  /**
+   * Returns bureau reports persisted for one applicant.
+   */
   @Get(':applicantId/bureau-reports')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get bureau reports by applicant' })
@@ -150,6 +160,9 @@ export class ApplicantCreditHistoryController {
     return this.getApplicantBureauReportsUseCase.execute(applicantId);
   }
 
+  /**
+   * Returns latest scores by applicant and optional provider filter.
+   */
   @Get(':applicantId/credit-scores/latest')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get latest credit scores by applicant and optional provider' })
@@ -198,6 +211,9 @@ export class ApplicantCreditHistoryController {
     return this.getLatestCreditScoresUseCase.execute(applicantId, providerName);
   }
 
+  /**
+   * Lightweight health endpoint.
+   */
   @Get('health')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Health check endpoint' })
@@ -213,6 +229,9 @@ export class ApplicantCreditHistoryController {
     return { message: 'Applicant Credit History Service is running.' };
   }
 
+  /**
+   * Shared guard for non-empty string validations.
+   */
   private assertString(value: unknown, fieldName: string): void {
     if (typeof value !== 'string' || value.trim().length === 0) {
       throw new BadRequestException(`${fieldName} must be a non-empty string`);

@@ -1,4 +1,10 @@
+/**
+ * Applicant entity used as reference data for loan applications.
+ */
 export class Applicant {
+  /**
+   * Creates an immutable applicant entity.
+   */
   constructor(
     public readonly id: string,
     public readonly name: string,

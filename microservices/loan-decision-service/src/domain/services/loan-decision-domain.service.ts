@@ -16,11 +16,23 @@ export interface DecisionOutcome {
 
 @Injectable()
 export class LoanDecisionDomainService {
+  /**
+   * Applies decision policy over a risk assessment and requested amount.
+   */
   decide(
     assessment: RiskAssessment,
     requestedAmount: number,
     policy: DecisionPolicyInput,
   ): DecisionOutcome {
+    if (requestedAmount <= 0) {
+      throw new Error('requestedAmount must be greater than 0');
+    }
+
+    if (policy.baseInterestRate < 0) {
+      throw new Error('baseInterestRate cannot be negative');
+    }
+
+    // Manual approval bypasses automatic approval/rejection.
     if (policy.manualApprovalRequired) {
       return {
         status: 'UNDER_REVIEW',
@@ -40,6 +52,7 @@ export class LoanDecisionDomainService {
       };
     }
 
+    // Risk above threshold is automatically rejected.
     return {
       status: 'REJECTED',
       approvedAmount: null,
@@ -47,10 +60,16 @@ export class LoanDecisionDomainService {
     };
   }
 
+  /**
+   * Calculates assigned interest rate as base rate plus risk premium.
+   */
   private calculateInterest(baseRate: number, riskProbability: number): number {
     return Number((baseRate + riskProbability).toFixed(4));
   }
 
+  /**
+   * Mutates the decision aggregate according to the computed outcome.
+   */
   applyOutcome(decision: CreditDecision, outcome: DecisionOutcome): void {
     if (outcome.status === 'APPROVED') {
       decision.approve(outcome.approvedAmount ?? 0, outcome.assignedInterestRate ?? 0);

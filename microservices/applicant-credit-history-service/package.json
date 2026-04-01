@@ -1,42 +1,45 @@
 {
-  "name": "applicant-credit-history-service",
-  "version": "0.1.0",
-  "private": true,
-  "description": "ApplicantCreditHistoryAggregate microservice",
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "test": "jest"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "testRegex": "test/.*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "testEnvironment": "node"
-  },
-  "dependencies": {
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
-    "@nestjs/swagger": "^11.2.6",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-    "swagger-ui-express": "^5.0.1"
-  },
-  "devDependencies": {
-    "@nestjs/testing": "^11.0.0",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^22.10.7",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.7.2"
-  }
+    "name":  "applicant-credit-history-service",
+    "version":  "0.1.0",
+    "private":  true,
+    "description":  "ApplicantCreditHistoryAggregate microservice",
+    "scripts":  {
+                    "build":  "tsc -p tsconfig.json",
+                    "start":  "nest start",
+                    "start:dev":  "nest start --watch",
+                    "start:debug":  "nest start --debug 127.0.0.1:9229 --watch",
+                    "test":  "jest",
+                    "test:watch":  "jest --watch",
+                    "test:debug":  "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand"
+                },
+    "jest":  {
+                 "moduleFileExtensions":  [
+                                              "js",
+                                              "json",
+                                              "ts"
+                                          ],
+                 "rootDir":  ".",
+                 "testRegex":  "test/.*\\.spec\\.ts$",
+                 "transform":  {
+                                   "^.+\\.(t|j)s$":  "ts-jest"
+                               },
+                 "testEnvironment":  "node"
+             },
+    "dependencies":  {
+                         "@nestjs/common":  "^11.0.0",
+                         "@nestjs/core":  "^11.0.0",
+                         "@nestjs/platform-express":  "^11.0.0",
+                         "@nestjs/swagger":  "^11.2.6",
+                         "reflect-metadata":  "^0.2.2",
+                         "rxjs":  "^7.8.1",
+                         "swagger-ui-express":  "^5.0.1"
+                     },
+    "devDependencies":  {
+                            "@nestjs/testing":  "^11.0.0",
+                            "@types/jest":  "^29.5.12",
+                            "@types/node":  "^22.10.7",
+                            "jest":  "^29.7.0",
+                            "ts-jest":  "^29.2.5",
+                            "typescript":  "^5.7.2"
+                        }
 }

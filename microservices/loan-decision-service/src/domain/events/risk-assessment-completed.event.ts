@@ -1,3 +1,6 @@
+/**
+ * Integration event consumed when risk assessment is completed in another context.
+ */
 export interface RiskAssessmentCompletedEvent {
   eventId: string;
   eventType: 'riskAssesmentCompleted';

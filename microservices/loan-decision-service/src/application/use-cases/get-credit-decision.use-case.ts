@@ -12,12 +12,16 @@ export class GetCreditDecisionUseCase {
     private readonly repository: LoanDecisionRepository,
   ) {}
 
+  /**
+   * Retrieves the latest credit decision associated to an application id.
+   */
   async execute(applicationId: string): Promise<GetCreditDecisionResult> {
     const decision = await this.repository.findDecisionByApplicationId(applicationId);
     if (!decision) {
       throw new NotFoundException(`Credit decision not found for applicationId ${applicationId}`);
     }
 
+    // Translate domain entity to query DTO.
     return {
       decisionId: decision.id,
       applicationId: decision.applicationId,

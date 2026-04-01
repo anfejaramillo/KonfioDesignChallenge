@@ -1,3 +1,6 @@
+/**
+ * Input contract for registering a loan product.
+ */
 export interface RegisterLoanProductCommand {
   id: string;
   name: string;

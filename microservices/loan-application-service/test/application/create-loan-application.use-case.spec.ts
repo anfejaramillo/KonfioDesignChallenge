@@ -6,13 +6,18 @@ import { InMemoryIdempotencyStoreAdapter } from '../../src/infrastructure/idempo
 class EventBusStub {
   public published = 0;
 
+  /**
+   * Tracks how many events would have been published.
+   */
   async publishLoanApplicationCreated(_: unknown): Promise<void> {
+    // Increment publication counter for assertions.
     this.published += 1;
   }
 }
 
 describe('CreateLoanApplicationUseCase', () => {
   it('returns same status for duplicated idempotency key', async () => {
+    // Arrange an isolated in-memory environment.
     const repository = new InMemoryLoanApplicationRepository();
     const idempotencyStore = new InMemoryIdempotencyStoreAdapter();
     const eventBus = new EventBusStub();
@@ -35,9 +40,11 @@ describe('CreateLoanApplicationUseCase', () => {
       correlationId: 'corr-101',
     };
 
+    // Act twice with the same idempotency key.
     const first = await useCase.execute(command);
     const second = await useCase.execute(command);
 
+    // Assert same status and single event publication.
     expect(first.status).toBe('UNDER_REVIEW');
     expect(second.status).toBe('UNDER_REVIEW');
     expect(eventBus.published).toBe(1);

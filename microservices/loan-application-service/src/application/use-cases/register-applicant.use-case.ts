@@ -13,6 +13,9 @@ import { RegisterApplicantResult } from '../dto/register-applicant.result';
 
 @Injectable()
 export class RegisterApplicantUseCase {
+  /**
+   * Builds the use case with write repository and idempotency dependencies.
+   */
   constructor(
     @Inject(LOAN_APPLICATION_REPOSITORY)
     private readonly repository: LoanApplicationRepository,
@@ -20,12 +23,17 @@ export class RegisterApplicantUseCase {
     private readonly idempotencyStore: IdempotencyStorePort,
   ) {}
 
+  /**
+   * Registers an applicant in an idempotent manner.
+   */
   async execute(command: RegisterApplicantCommand): Promise<RegisterApplicantResult> {
+    // Avoid duplicate writes for retried commands.
     const alreadyProcessed = await this.idempotencyStore.exists(command.idempotencyKey);
     if (alreadyProcessed) {
       return { applicantId: command.id };
     }
 
+    // Build and persist applicant entity.
     const applicant = new Applicant(
       command.id,
       command.name,
@@ -36,6 +44,7 @@ export class RegisterApplicantUseCase {
       command.email,
     );
 
+    // Persist state and track idempotency key lifetime.
     await this.repository.saveApplicant(applicant);
     await this.idempotencyStore.save(command.idempotencyKey, 60 * 60 * 24 * 7);
 
